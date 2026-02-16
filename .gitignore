@@ -1,0 +1,15 @@
+# Xcode user data
+xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+
+# Build products
+build/
+DerivedData/
+
+# OS files
+.DS_Store
+
+# Swift Package Manager
+.build/
+.swiftpm/
