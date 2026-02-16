@@ -1,10 +1,12 @@
 import AuthenticationServices
 import Foundation
+import UIKit
 
 @MainActor
 final class StravaAuth: NSObject, ObservableObject, ASWebAuthenticationPresentationContextProviding {
     @Published var isAuthenticated = false
     @Published var errorMessage: String?
+    private var authSession: ASWebAuthenticationSession?
 
     private static let tokenURL = "https://www.strava.com/oauth/token"
     private static let authURL = "https://www.strava.com/oauth/authorize"
@@ -57,12 +59,13 @@ final class StravaAuth: NSObject, ObservableObject, ASWebAuthenticationPresentat
             URLQueryItem(name: "approval_prompt", value: "auto"),
         ]
 
-        let session = ASWebAuthenticationSession(
+        authSession = ASWebAuthenticationSession(
             url: components.url!,
             callbackURLScheme: Self.callbackScheme
         ) { [weak self] callbackURL, error in
             Task { @MainActor in
                 guard let self else { return }
+                self.authSession = nil
                 if let error {
                     self.errorMessage = error.localizedDescription
                     return
@@ -76,9 +79,9 @@ final class StravaAuth: NSObject, ObservableObject, ASWebAuthenticationPresentat
                 await self.exchangeCode(code)
             }
         }
-        session.presentationContextProvider = self
-        session.prefersEphemeralWebBrowserSession = false
-        session.start()
+        authSession?.presentationContextProvider = self
+        authSession?.prefersEphemeralWebBrowserSession = false
+        authSession?.start()
     }
 
     private func exchangeCode(_ code: String) async {
@@ -166,7 +169,10 @@ final class StravaAuth: NSObject, ObservableObject, ASWebAuthenticationPresentat
 
     nonisolated func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
         MainActor.assumeIsolated {
-            ASPresentationAnchor()
+            UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .flatMap(\.windows)
+                .first(where: \.isKeyWindow) ?? ASPresentationAnchor()
         }
     }
 }
