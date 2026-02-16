@@ -53,7 +53,7 @@ final class StravaAuth: NSObject, ObservableObject, ASWebAuthenticationPresentat
         var components = URLComponents(string: Self.authURL)!
         components.queryItems = [
             URLQueryItem(name: "client_id", value: clientId),
-            URLQueryItem(name: "redirect_uri", value: "\(Self.callbackScheme)://callback"),
+            URLQueryItem(name: "redirect_uri", value: "\(Self.callbackScheme)://localhost"),
             URLQueryItem(name: "response_type", value: "code"),
             URLQueryItem(name: "scope", value: "activity:read_all"),
             URLQueryItem(name: "approval_prompt", value: "auto"),
