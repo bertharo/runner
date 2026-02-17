@@ -7,7 +7,7 @@ final class ClaudeCoach: ObservableObject {
     @Published var latestResponse: String?
     @Published var errorMessage: String?
 
-    private static let apiURL = "https://runtracker-proxy.bertharo.workers.dev/coach/messages"
+    private static let apiURL = "https://runner.bertharo23.workers.dev/coach/messages"
 
     // MARK: - Public Commands
 

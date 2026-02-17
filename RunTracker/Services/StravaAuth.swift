@@ -8,7 +8,7 @@ final class StravaAuth: NSObject, ObservableObject, ASWebAuthenticationPresentat
     @Published var errorMessage: String?
     private var authSession: ASWebAuthenticationSession?
 
-    private static let proxyBaseURL = "https://runtracker-proxy.bertharo.workers.dev"
+    private static let proxyBaseURL = "https://runner.bertharo23.workers.dev"
     private static let authURL = "https://www.strava.com/oauth/authorize"
     private static let callbackScheme = "runtracker"
 
