@@ -8,9 +8,17 @@ final class ClaudeCoach: ObservableObject {
     @Published var errorMessage: String?
 
     private static let apiURL = "https://runner.bertharo23.workers.dev/coach/messages"
+    private var currentTask: Task<Void, Never>?
 
     private var selectedModel: String {
         UserDefaults.standard.string(forKey: "coach_model") ?? "claude-haiku-4-5-20251001"
+    }
+
+    func cancel() {
+        currentTask?.cancel()
+        currentTask = nil
+        isLoading = false
+        errorMessage = "Request cancelled."
     }
 
     // MARK: - Public Commands

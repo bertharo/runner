@@ -453,6 +453,8 @@ private struct CoachSheet: View {
 
     @State private var selectedTab = 0
     @State private var question = ""
+    @State private var elapsedSeconds = 0
+    @State private var timer: Timer?
 
     var body: some View {
         NavigationStack {
@@ -516,9 +518,15 @@ private struct CoachSheet: View {
                     VStack(spacing: 16) {
                         ProgressView()
                             .scaleEffect(1.2)
-                        Text("Analyzing...")
+                        Text("Analyzing... \(elapsedSeconds)s")
                             .font(.subheadline)
                             .foregroundStyle(.tertiary)
+                        Button("Cancel") {
+                            coach.cancel()
+                            stopTimer()
+                        }
+                        .foregroundStyle(.red)
+                        .font(.subheadline)
                     }
                     Spacer()
                 } else if let error = coach.errorMessage {
@@ -563,7 +571,27 @@ private struct CoachSheet: View {
                     Button("Done") { dismiss() }
                 }
             }
+            .onChange(of: coach.isLoading) { _, loading in
+                if loading {
+                    startTimer()
+                } else {
+                    stopTimer()
+                }
+            }
         }
+    }
+
+    private func startTimer() {
+        elapsedSeconds = 0
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            elapsedSeconds += 1
+        }
+    }
+
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+        elapsedSeconds = 0
     }
 
     // MARK: - Coaching Response Cards
