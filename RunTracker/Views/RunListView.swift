@@ -48,7 +48,7 @@ struct RunListView: View {
                     }
                 }
             }
-            .navigationTitle("RunTracker")
+            .navigationTitle("tränare")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddRun = true }) {

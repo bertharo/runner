@@ -362,7 +362,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				INFOPLIST_KEY_CFBundleDisplayName = "RunCoach AI";
+				INFOPLIST_KEY_CFBundleDisplayName = "tränare";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bertharo23.runtracker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -391,7 +391,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				INFOPLIST_KEY_CFBundleDisplayName = "RunCoach AI";
+				INFOPLIST_KEY_CFBundleDisplayName = "tränare";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bertharo23.runtracker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
