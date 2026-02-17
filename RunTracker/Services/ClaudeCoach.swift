@@ -9,6 +9,10 @@ final class ClaudeCoach: ObservableObject {
 
     private static let apiURL = "https://runner.bertharo23.workers.dev/coach/messages"
 
+    private var selectedModel: String {
+        UserDefaults.standard.string(forKey: "coach_model") ?? "claude-haiku-4-5-20251001"
+    }
+
     // MARK: - Public Commands
 
     func analyzeTraining(modelContext: ModelContext) async {
@@ -70,7 +74,7 @@ final class ClaudeCoach: ObservableObject {
             let fullMessage = "## Training Data\n\n\(trainingContext)\n\n---\n\n\(userMessage)"
 
             let body: [String: Any] = [
-                "model": "claude-sonnet-4-5-20250929",
+                "model": selectedModel,
                 "max_tokens": 2048,
                 "system": systemPrompt,
                 "messages": [["role": "user", "content": fullMessage]],
@@ -78,6 +82,7 @@ final class ClaudeCoach: ObservableObject {
 
             var request = URLRequest(url: URL(string: Self.apiURL)!)
             request.httpMethod = "POST"
+            request.timeoutInterval = 90
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
