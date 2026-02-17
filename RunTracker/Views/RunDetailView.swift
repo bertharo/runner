@@ -28,7 +28,7 @@ struct RunDetailView: View {
                         DetailRow(icon: "heart", label: "Max HR", value: "\(Int(maxHr)) bpm")
                     }
                     if let elev = run.totalElevationGain {
-                        DetailRow(icon: "mountain.2", label: "Elevation", value: String(format: "%.0f m", elev))
+                        DetailRow(icon: "mountain.2", label: "Elevation", value: PaceFormatter.formattedElevation(meters: elev))
                     }
                     if let suffer = run.sufferScore {
                         DetailRow(icon: "flame", label: "Suffer Score", value: "\(suffer)")

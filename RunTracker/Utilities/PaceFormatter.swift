@@ -1,11 +1,21 @@
 import Foundation
+import SwiftUI
 
 struct PaceFormatter {
+    static var useMiles: Bool {
+        UserDefaults.standard.object(forKey: "use_miles") == nil
+            ? true
+            : UserDefaults.standard.bool(forKey: "use_miles")
+    }
+
+    static var unitLabel: String { useMiles ? "mi" : "km" }
+
     static func formatted(pace: Double) -> String {
         guard pace > 0, pace.isFinite else { return "--:--" }
-        let minutes = Int(pace)
-        let seconds = Int((pace - Double(minutes)) * 60)
-        return String(format: "%d:%02d /km", minutes, seconds)
+        let adjusted = useMiles ? pace * 1.60934 : pace
+        let minutes = Int(adjusted)
+        let seconds = Int((adjusted - Double(minutes)) * 60)
+        return String(format: "%d:%02d /\(unitLabel)", minutes, seconds)
     }
 
     static func formattedDuration(seconds: Int) -> String {
@@ -19,6 +29,16 @@ struct PaceFormatter {
     }
 
     static func formattedDistance(km: Double) -> String {
+        if useMiles {
+            return String(format: "%.2f mi", km * 0.621371)
+        }
         return String(format: "%.2f km", km)
+    }
+
+    static func formattedElevation(meters: Double) -> String {
+        if useMiles {
+            return String(format: "%.0f ft", meters * 3.28084)
+        }
+        return String(format: "%.0f m", meters)
     }
 }

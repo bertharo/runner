@@ -8,7 +8,7 @@ final class StravaAuth: NSObject, ObservableObject, ASWebAuthenticationPresentat
     @Published var errorMessage: String?
     private var authSession: ASWebAuthenticationSession?
 
-    private static let tokenURL = "https://www.strava.com/oauth/token"
+    private static let proxyBaseURL = "https://runtracker-proxy.bertharo.workers.dev"
     private static let authURL = "https://www.strava.com/oauth/authorize"
     private static let callbackScheme = "runtracker"
 
@@ -34,61 +34,66 @@ final class StravaAuth: NSObject, ObservableObject, ASWebAuthenticationPresentat
         set { UserDefaults.standard.set(newValue, forKey: "strava_expires_at") }
     }
 
-    private var clientId: String {
-        UserDefaults.standard.string(forKey: "strava_client_id") ?? ""
-    }
+    // MARK: - Proxy Config
 
-    private var clientSecret: String {
-        UserDefaults.standard.string(forKey: "strava_client_secret") ?? ""
+    private func fetchClientId() async throws -> String {
+        let url = URL(string: "\(Self.proxyBaseURL)/strava/config")!
+        let (data, _) = try await URLSession.shared.data(from: url)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        guard let clientId = json["client_id"] as? String else {
+            throw URLError(.badServerResponse)
+        }
+        return clientId
     }
 
     // MARK: - OAuth Flow
 
     func authorize() {
-        guard !clientId.isEmpty, !clientSecret.isEmpty else {
-            errorMessage = "Enter Strava Client ID and Secret in Settings first."
-            return
-        }
+        Task {
+            do {
+                let clientId = try await fetchClientId()
 
-        var components = URLComponents(string: Self.authURL)!
-        components.queryItems = [
-            URLQueryItem(name: "client_id", value: clientId),
-            URLQueryItem(name: "redirect_uri", value: "\(Self.callbackScheme)://localhost"),
-            URLQueryItem(name: "response_type", value: "code"),
-            URLQueryItem(name: "scope", value: "activity:read_all"),
-            URLQueryItem(name: "approval_prompt", value: "auto"),
-        ]
+                var components = URLComponents(string: Self.authURL)!
+                components.queryItems = [
+                    URLQueryItem(name: "client_id", value: clientId),
+                    URLQueryItem(name: "redirect_uri", value: "\(Self.callbackScheme)://localhost"),
+                    URLQueryItem(name: "response_type", value: "code"),
+                    URLQueryItem(name: "scope", value: "activity:read_all"),
+                    URLQueryItem(name: "approval_prompt", value: "auto"),
+                ]
 
-        authSession = ASWebAuthenticationSession(
-            url: components.url!,
-            callbackURLScheme: Self.callbackScheme
-        ) { [weak self] callbackURL, error in
-            Task { @MainActor in
-                guard let self else { return }
-                self.authSession = nil
-                if let error {
-                    self.errorMessage = error.localizedDescription
-                    return
+                authSession = ASWebAuthenticationSession(
+                    url: components.url!,
+                    callbackURLScheme: Self.callbackScheme
+                ) { [weak self] callbackURL, error in
+                    Task { @MainActor in
+                        guard let self else { return }
+                        self.authSession = nil
+                        if let error {
+                            self.errorMessage = error.localizedDescription
+                            return
+                        }
+                        guard let callbackURL,
+                              let code = URLComponents(url: callbackURL, resolvingAgainstBaseURL: false)?
+                                .queryItems?.first(where: { $0.name == "code" })?.value else {
+                            self.errorMessage = "No authorization code received."
+                            return
+                        }
+                        await self.exchangeCode(code)
+                    }
                 }
-                guard let callbackURL,
-                      let code = URLComponents(url: callbackURL, resolvingAgainstBaseURL: false)?
-                        .queryItems?.first(where: { $0.name == "code" })?.value else {
-                    self.errorMessage = "No authorization code received."
-                    return
-                }
-                await self.exchangeCode(code)
+                authSession?.presentationContextProvider = self
+                authSession?.prefersEphemeralWebBrowserSession = false
+                authSession?.start()
+            } catch {
+                errorMessage = "Failed to fetch config: \(error.localizedDescription)"
             }
         }
-        authSession?.presentationContextProvider = self
-        authSession?.prefersEphemeralWebBrowserSession = false
-        authSession?.start()
     }
 
     private func exchangeCode(_ code: String) async {
         do {
             let tokens = try await tokenRequest(params: [
-                "client_id": clientId,
-                "client_secret": clientSecret,
                 "code": code,
                 "grant_type": "authorization_code",
             ])
@@ -113,8 +118,6 @@ final class StravaAuth: NSObject, ObservableObject, ASWebAuthenticationPresentat
         }
 
         let tokens = try await tokenRequest(params: [
-            "client_id": clientId,
-            "client_secret": clientSecret,
             "refresh_token": refresh,
             "grant_type": "refresh_token",
         ])
@@ -140,7 +143,7 @@ final class StravaAuth: NSObject, ObservableObject, ASWebAuthenticationPresentat
     }
 
     private func tokenRequest(params: [String: String]) async throws -> TokenResponse {
-        var request = URLRequest(url: URL(string: Self.tokenURL)!)
+        var request = URLRequest(url: URL(string: "\(Self.proxyBaseURL)/strava/token")!)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: params)

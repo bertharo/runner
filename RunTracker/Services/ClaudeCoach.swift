@@ -7,11 +7,7 @@ final class ClaudeCoach: ObservableObject {
     @Published var latestResponse: String?
     @Published var errorMessage: String?
 
-    private static let apiURL = "https://api.anthropic.com/v1/messages"
-
-    private var apiKey: String {
-        UserDefaults.standard.string(forKey: "anthropic_api_key") ?? ""
-    }
+    private static let apiURL = "https://runtracker-proxy.bertharo.workers.dev/coach/messages"
 
     // MARK: - Public Commands
 
@@ -63,11 +59,6 @@ final class ClaudeCoach: ObservableObject {
     // MARK: - Core Send
 
     private func sendToCoach(command: String, userMessage: String, modelContext: ModelContext) async {
-        guard !apiKey.isEmpty else {
-            errorMessage = "Enter your Anthropic API key in Settings."
-            return
-        }
-
         isLoading = true
         errorMessage = nil
         latestResponse = nil
@@ -88,8 +79,6 @@ final class ClaudeCoach: ObservableObject {
             var request = URLRequest(url: URL(string: Self.apiURL)!)
             request.httpMethod = "POST"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
-            request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
             let (data, response) = try await URLSession.shared.data(for: request)

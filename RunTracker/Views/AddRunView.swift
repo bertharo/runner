@@ -5,6 +5,7 @@ struct AddRunView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
+    @AppStorage("use_miles") private var useMiles = true
     @State private var distance: String = ""
     @State private var hours: Int = 0
     @State private var minutes: Int = 0
@@ -25,7 +26,7 @@ struct AddRunView: View {
                     HStack {
                         TextField("0.00", text: $distance)
                             .keyboardType(.decimalPad)
-                        Text("km")
+                        Text(useMiles ? "mi" : "km")
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -64,7 +65,8 @@ struct AddRunView: View {
 
                 if let dist = Double(distance), dist > 0, totalSeconds > 0 {
                     Section("Estimated Pace") {
-                        let pace = (Double(totalSeconds) / 60.0) / dist
+                        let distKm = useMiles ? dist / 0.621371 : dist
+                        let pace = (Double(totalSeconds) / 60.0) / distKm
                         Text(PaceFormatter.formatted(pace: pace))
                             .font(.title2)
                             .fontWeight(.semibold)
@@ -103,7 +105,8 @@ struct AddRunView: View {
             return
         }
 
-        let run = Run(distance: dist, duration: totalSeconds, date: date, notes: notes)
+        let distKm = useMiles ? dist / 0.621371 : dist
+        let run = Run(distance: distKm, duration: totalSeconds, date: date, notes: notes)
         modelContext.insert(run)
         dismiss()
     }

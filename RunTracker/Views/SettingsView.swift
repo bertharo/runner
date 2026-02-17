@@ -5,9 +5,7 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var profiles: [UserProfile]
 
-    @AppStorage("anthropic_api_key") private var anthropicApiKey = ""
-    @AppStorage("strava_client_id") private var stravaClientId = ""
-    @AppStorage("strava_client_secret") private var stravaClientSecret = ""
+    @AppStorage("use_miles") private var useMiles = true
 
     @StateObject private var stravaAuth = StravaAuth()
     @State private var stravaClient: StravaClient?
@@ -20,19 +18,14 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Anthropic API") {
-                    SecureField("API Key", text: $anthropicApiKey)
-                        .textContentType(.password)
-                        .autocorrectionDisabled()
+                Section("Units") {
+                    Picker("Distance", selection: $useMiles) {
+                        Text("Miles").tag(true)
+                        Text("Kilometers").tag(false)
+                    }
                 }
 
                 Section("Strava") {
-                    TextField("Client ID", text: $stravaClientId)
-                        .keyboardType(.numberPad)
-                    SecureField("Client Secret", text: $stravaClientSecret)
-                        .textContentType(.password)
-                        .autocorrectionDisabled()
-
                     if stravaAuth.isAuthenticated {
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
@@ -59,7 +52,6 @@ struct SettingsView: View {
                         Button("Connect Strava") {
                             stravaAuth.authorize()
                         }
-                        .disabled(stravaClientId.isEmpty || stravaClientSecret.isEmpty)
                     }
 
                     if let error = stravaAuth.errorMessage {
