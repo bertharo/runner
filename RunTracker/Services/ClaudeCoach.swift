@@ -90,12 +90,22 @@ final class ClaudeCoach: ObservableObject {
                 return
             }
 
-            let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+            guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                let raw = String(data: data, encoding: .utf8) ?? "unreadable"
+                errorMessage = "Cannot parse response: \(raw.prefix(200))"
+                return
+            }
             let content = json["content"] as? [[String: Any]] ?? []
             let text = content
                 .filter { ($0["type"] as? String) == "text" }
                 .compactMap { $0["text"] as? String }
                 .joined(separator: "\n")
+
+            if text.isEmpty {
+                let raw = String(data: data, encoding: .utf8) ?? "unreadable"
+                errorMessage = "Empty response from coach: \(raw.prefix(300))"
+                return
+            }
 
             latestResponse = text
 

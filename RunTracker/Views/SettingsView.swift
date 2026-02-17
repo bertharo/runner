@@ -14,6 +14,7 @@ struct SettingsView: View {
     @State private var goalDate = ""
     @State private var goalTime = ""
     @State private var weeklyMileageTarget = ""
+    @State private var goalSaved = false
 
     var body: some View {
         NavigationStack {
@@ -70,8 +71,18 @@ struct SettingsView: View {
 
                     Button("Save Goal") {
                         saveGoal()
+                        goalSaved = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            goalSaved = false
+                        }
                     }
                     .disabled(goalRace.trimmingCharacters(in: .whitespaces).isEmpty)
+
+                    if goalSaved {
+                        Text("Goal saved!")
+                            .font(.caption)
+                            .foregroundStyle(.green)
+                    }
                 }
             }
             .navigationTitle("Settings")
