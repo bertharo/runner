@@ -29,6 +29,11 @@ struct SettingsView: View {
                         LabeledContent("Email", value: email)
                     }
 
+                    if let userId = authManager.userIdentifier {
+                        LabeledContent("User ID", value: userId)
+                            .textSelection(.enabled)
+                    }
+
                     Button("Sign Out", role: .destructive) {
                         showSignOutConfirmation = true
                     }

@@ -12,7 +12,7 @@ struct SignInView: View {
                 .font(.system(size: 80))
                 .foregroundStyle(.blue)
 
-            Text("RunTracker")
+            Text("tränare")
                 .font(.largeTitle.bold())
 
             Text("Sign in to get started")
