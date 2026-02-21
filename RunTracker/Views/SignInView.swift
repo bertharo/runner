@@ -20,12 +20,12 @@ struct SignInView: View {
                 .foregroundStyle(.secondary)
 
             SignInWithAppleButton(.signIn) { request in
-                request.requestedScopes = [.email]
+                request.requestedScopes = [.fullName, .email]
             } onCompletion: { result in
                 switch result {
                 case .success(let authorization):
                     guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else { return }
-                    authManager.completeSignIn(userId: credential.user, email: credential.email)
+                    authManager.completeSignIn(userId: credential.user, email: credential.email, fullName: credential.fullName)
                 case .failure(let error):
                     let authError = error as? ASAuthorizationError
                     if authError?.code == .canceled { return }

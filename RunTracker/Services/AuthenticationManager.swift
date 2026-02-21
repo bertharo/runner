@@ -8,6 +8,7 @@ final class AuthenticationManager: NSObject, ObservableObject {
     @Published var isAuthenticated = false
     @Published var userEmail: String?
     @Published var userIdentifier: String?
+    @Published var userDisplayName: String?
     @Published var errorMessage: String?
 
     private override init() {
@@ -47,13 +48,23 @@ final class AuthenticationManager: NSObject, ObservableObject {
 
     // MARK: - Complete Sign In (called from SwiftUI SignInWithAppleButton)
 
-    func completeSignIn(userId: String, email: String?) {
+    func completeSignIn(userId: String, email: String?, fullName: PersonNameComponents?) {
         Self.saveKeychainItem(key: "apple_user_identifier", value: userId)
         userIdentifier = userId
 
         if let email {
             Self.saveKeychainItem(key: "apple_user_email", value: email)
             self.userEmail = email
+        }
+
+        if let fullName {
+            let name = [fullName.givenName, fullName.familyName]
+                .compactMap { $0 }
+                .joined(separator: " ")
+            if !name.isEmpty {
+                Self.saveKeychainItem(key: "apple_user_name", value: name)
+                self.userDisplayName = name
+            }
         }
 
         isAuthenticated = true
@@ -65,9 +76,11 @@ final class AuthenticationManager: NSObject, ObservableObject {
     func signOut() {
         Self.deleteKeychainItem(key: "apple_user_identifier")
         Self.deleteKeychainItem(key: "apple_user_email")
+        Self.deleteKeychainItem(key: "apple_user_name")
         isAuthenticated = false
         userIdentifier = nil
         userEmail = nil
+        userDisplayName = nil
     }
 
     // MARK: - Keychain Helpers
@@ -75,6 +88,7 @@ final class AuthenticationManager: NSObject, ObservableObject {
     private func loadCredentials() {
         userIdentifier = Self.readKeychainItem(key: "apple_user_identifier")
         userEmail = Self.readKeychainItem(key: "apple_user_email")
+        userDisplayName = Self.readKeychainItem(key: "apple_user_name")
         isAuthenticated = userIdentifier != nil
     }
 
@@ -123,20 +137,11 @@ extension AuthenticationManager: ASAuthorizationControllerDelegate {
         guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else { return }
 
         let userId = credential.user
-        let email = credential.email // Only available on first sign-in
+        let email = credential.email
+        let fullName = credential.fullName
 
         Task { @MainActor in
-            Self.saveKeychainItem(key: "apple_user_identifier", value: userId)
-            self.userIdentifier = userId
-
-            // Email is only provided on first sign-in — persist immediately
-            if let email {
-                Self.saveKeychainItem(key: "apple_user_email", value: email)
-                self.userEmail = email
-            }
-
-            self.isAuthenticated = true
-            self.errorMessage = nil
+            self.completeSignIn(userId: userId, email: email, fullName: fullName)
         }
     }
 

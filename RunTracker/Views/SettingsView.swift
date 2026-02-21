@@ -25,14 +25,18 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section("Account") {
-                    if let email = authManager.userEmail {
-                        LabeledContent("Email", value: email)
+                    HStack(spacing: 12) {
+                        Image(systemName: "apple.logo")
+                            .font(.title2)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(authManager.userDisplayName ?? "Apple Account")
+                                .font(.body.weight(.medium))
+                            Text("Signed in with Apple")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
-
-                    if let userId = authManager.userIdentifier {
-                        LabeledContent("User ID", value: userId)
-                            .textSelection(.enabled)
-                    }
+                    .padding(.vertical, 4)
 
                     Button("Sign Out", role: .destructive) {
                         showSignOutConfirmation = true
