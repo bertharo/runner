@@ -5,11 +5,13 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var profiles: [UserProfile]
 
+    @EnvironmentObject private var authManager: AuthenticationManager
+
     @AppStorage("use_miles") private var useMiles = true
     @AppStorage("coach_model") private var coachModel = "llama-3.3-70b-versatile"
-    @AppStorage("user_email") private var userEmail = ""
 
     @StateObject private var stravaAuth = StravaAuth()
+    @State private var showSignOutConfirmation = false
     @State private var stravaClient: StravaClient?
 
     @State private var goalRace = ""
@@ -22,6 +24,16 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section("Account") {
+                    if let email = authManager.userEmail {
+                        LabeledContent("Email", value: email)
+                    }
+
+                    Button("Sign Out", role: .destructive) {
+                        showSignOutConfirmation = true
+                    }
+                }
+
                 Section("Units") {
                     Picker("Distance", selection: $useMiles) {
                         Text("Miles").tag(true)
@@ -30,11 +42,6 @@ struct SettingsView: View {
                 }
 
                 Section("AI Coach") {
-                    TextField("Email", text: $userEmail)
-                        .keyboardType(.emailAddress)
-                        .textContentType(.emailAddress)
-                        .autocapitalization(.none)
-
                     Picker("Model", selection: $coachModel) {
                         Section("Free") {
                             Text("Llama 3.3 70B").tag("llama-3.3-70b-versatile")
@@ -117,6 +124,14 @@ struct SettingsView: View {
                 }
             }
             .onAppear { loadProfile() }
+            .alert("Sign Out", isPresented: $showSignOutConfirmation) {
+                Button("Sign Out", role: .destructive) {
+                    authManager.signOut()
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("Are you sure you want to sign out?")
+            }
         }
     }
 
@@ -157,5 +172,6 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView()
+        .environmentObject(AuthenticationManager.shared)
         .modelContainer(for: [Run.self, UserProfile.self, CoachingResponse.self], inMemory: true)
 }

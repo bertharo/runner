@@ -14,8 +14,8 @@ final class ClaudeCoach: ObservableObject {
         UserDefaults.standard.string(forKey: "coach_model") ?? "llama-3.3-70b-versatile"
     }
 
-    private var userEmail: String {
-        UserDefaults.standard.string(forKey: "user_email") ?? ""
+    private var userId: String {
+        AuthenticationManager.shared.userIdentifier ?? ""
     }
 
     func cancel() {
@@ -90,7 +90,7 @@ final class ClaudeCoach: ObservableObject {
                 "max_tokens": 2048,
                 "system": systemPrompt,
                 "messages": [["role": "user", "content": fullMessage]],
-                "user_email": userEmail,
+                "user_id": userId,
             ]
 
             var request = URLRequest(url: URL(string: Self.apiURL)!)

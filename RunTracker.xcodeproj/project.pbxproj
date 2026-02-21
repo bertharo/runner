@@ -23,6 +23,8 @@
 		AA000014 /* StravaClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000014 /* StravaClient.swift */; };
 		AA000015 /* ClaudeCoach.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000015 /* ClaudeCoach.swift */; };
 		AA000016 /* coaching-persona.md in Resources */ = {isa = PBXBuildFile; fileRef = AB000016 /* coaching-persona.md */; };
+		AA000017 /* AuthenticationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000017 /* AuthenticationManager.swift */; };
+		AA000018 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000018 /* SignInView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,6 +44,8 @@
 		AB000014 /* StravaClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StravaClient.swift; sourceTree = "<group>"; };
 		AB000015 /* ClaudeCoach.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeCoach.swift; sourceTree = "<group>"; };
 		AB000016 /* coaching-persona.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "coaching-persona.md"; sourceTree = "<group>"; };
+		AB000017 /* AuthenticationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationManager.swift; sourceTree = "<group>"; };
+		AB000018 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		AC000001 /* RunTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RunTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -91,6 +95,7 @@
 		AE000004 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				AB000018 /* SignInView.swift */,
 				AB000010 /* ContentView.swift */,
 				AB000003 /* RunListView.swift */,
 				AB000004 /* AddRunView.swift */,
@@ -120,6 +125,7 @@
 		AE000007 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				AB000017 /* AuthenticationManager.swift */,
 				AB000013 /* StravaAuth.swift */,
 				AB000014 /* StravaClient.swift */,
 				AB000015 /* ClaudeCoach.swift */,
@@ -219,6 +225,8 @@
 				AA000013 /* StravaAuth.swift in Sources */,
 				AA000014 /* StravaClient.swift in Sources */,
 				AA000015 /* ClaudeCoach.swift in Sources */,
+				AA000017 /* AuthenticationManager.swift in Sources */,
+				AA000018 /* SignInView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

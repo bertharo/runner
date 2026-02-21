@@ -18,17 +18,17 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
-const PREMIUM_EMAILS = new Set([
-  "bertharo23@gmail.com",
-  "puriostegue@gmail.com",
+const PREMIUM_USER_IDS = new Set([
+  // Add Apple userIdentifiers here after signing in
+  // e.g. "001234.abcdef1234567890abcdef1234567890.1234"
 ]);
 
 function isGroqModel(model: string): boolean {
   return !model.startsWith("claude-");
 }
 
-function isPremiumUser(email: string): boolean {
-  return PREMIUM_EMAILS.has(email.toLowerCase().trim());
+function isPremiumUser(userId: string): boolean {
+  return PREMIUM_USER_IDS.has(userId);
 }
 
 function translateToGroqRequest(body: Record<string, unknown>): Record<string, unknown> {
@@ -140,10 +140,10 @@ async function handleCoachMessages(request: Request, env: Env): Promise<Response
   }
 
   const model = String(body.model ?? "");
-  const userEmail = String(body.user_email ?? "");
+  const userId = String(body.user_id ?? "");
 
   // Gate Claude models to premium users only
-  if (!isGroqModel(model) && !isPremiumUser(userEmail)) {
+  if (!isGroqModel(model) && !isPremiumUser(userId)) {
     return jsonResponse({
       content: [{ type: "text", text: "Premium models require a paid account. Please switch to Llama 3.3 70B (free) in Settings, or contact support to upgrade." }],
       model,
@@ -151,8 +151,8 @@ async function handleCoachMessages(request: Request, env: Env): Promise<Response
     }, 200);
   }
 
-  // Strip user_email before forwarding to any provider
-  delete body.user_email;
+  // Strip user_id before forwarding to any provider
+  delete body.user_id;
 
   if (isGroqModel(model)) {
     // Route to Groq
