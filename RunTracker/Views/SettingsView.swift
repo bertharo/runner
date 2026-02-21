@@ -6,7 +6,8 @@ struct SettingsView: View {
     @Query private var profiles: [UserProfile]
 
     @AppStorage("use_miles") private var useMiles = true
-    @AppStorage("coach_model") private var coachModel = "claude-haiku-4-5-20251001"
+    @AppStorage("coach_model") private var coachModel = "llama-3.3-70b-versatile"
+    @AppStorage("user_email") private var userEmail = ""
 
     @StateObject private var stravaAuth = StravaAuth()
     @State private var stravaClient: StravaClient?
@@ -29,10 +30,20 @@ struct SettingsView: View {
                 }
 
                 Section("AI Coach") {
+                    TextField("Email", text: $userEmail)
+                        .keyboardType(.emailAddress)
+                        .textContentType(.emailAddress)
+                        .autocapitalization(.none)
+
                     Picker("Model", selection: $coachModel) {
-                        Text("Haiku (Fast)").tag("claude-haiku-4-5-20251001")
-                        Text("Sonnet (Balanced)").tag("claude-sonnet-4-5-20250929")
-                        Text("Opus (Most Capable)").tag("claude-opus-4-6")
+                        Section("Free") {
+                            Text("Llama 3.3 70B").tag("llama-3.3-70b-versatile")
+                        }
+                        Section("Premium") {
+                            Text("Haiku (Fast)").tag("claude-haiku-4-5-20251001")
+                            Text("Sonnet (Balanced)").tag("claude-sonnet-4-5-20250929")
+                            Text("Opus (Most Capable)").tag("claude-opus-4-6")
+                        }
                     }
                 }
 

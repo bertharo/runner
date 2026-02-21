@@ -11,7 +11,11 @@ final class ClaudeCoach: ObservableObject {
     private var currentTask: Task<Void, Never>?
 
     private var selectedModel: String {
-        UserDefaults.standard.string(forKey: "coach_model") ?? "claude-haiku-4-5-20251001"
+        UserDefaults.standard.string(forKey: "coach_model") ?? "llama-3.3-70b-versatile"
+    }
+
+    private var userEmail: String {
+        UserDefaults.standard.string(forKey: "user_email") ?? ""
     }
 
     func cancel() {
@@ -86,6 +90,7 @@ final class ClaudeCoach: ObservableObject {
                 "max_tokens": 2048,
                 "system": systemPrompt,
                 "messages": [["role": "user", "content": fullMessage]],
+                "user_email": userEmail,
             ]
 
             var request = URLRequest(url: URL(string: Self.apiURL)!)
