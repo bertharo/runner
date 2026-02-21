@@ -16,6 +16,7 @@ struct SettingsView: View {
     @State private var goalTime = ""
     @State private var weeklyMileageTarget = ""
     @State private var goalSaved = false
+    @FocusState private var mileageFieldFocused: Bool
 
     var body: some View {
         NavigationStack {
@@ -77,6 +78,7 @@ struct SettingsView: View {
                     TextField("Target Time (e.g. 3:30:00)", text: $goalTime)
                     TextField("Weekly Mileage Target", text: $weeklyMileageTarget)
                         .keyboardType(.decimalPad)
+                        .focused($mileageFieldFocused)
 
                     Button("Save Goal") {
                         saveGoal()
@@ -95,6 +97,14 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        mileageFieldFocused = false
+                    }
+                }
+            }
             .onAppear { loadProfile() }
         }
     }

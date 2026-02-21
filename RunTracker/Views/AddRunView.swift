@@ -14,6 +14,7 @@ struct AddRunView: View {
     @State private var notes: String = ""
     @State private var showingValidationAlert = false
     @State private var validationMessage = ""
+    @FocusState private var distanceFieldFocused: Bool
 
     private var totalSeconds: Int {
         hours * 3600 + minutes * 60 + seconds
@@ -26,6 +27,7 @@ struct AddRunView: View {
                     HStack {
                         TextField("0.00", text: $distance)
                             .keyboardType(.decimalPad)
+                            .focused($distanceFieldFocused)
                         Text(useMiles ? "mi" : "km")
                             .foregroundStyle(.secondary)
                     }
@@ -82,6 +84,12 @@ struct AddRunView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { saveRun() }
                         .fontWeight(.semibold)
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        distanceFieldFocused = false
+                    }
                 }
             }
             .alert("Invalid Input", isPresented: $showingValidationAlert) {
