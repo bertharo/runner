@@ -405,7 +405,8 @@ final class ClaudeCoach: ObservableObject {
 
     private func getWeekStart(_ date: Date) -> Date {
         var calendar = Calendar.current
-        calendar.firstWeekday = 2 // Monday
+        let stored = UserDefaults.standard.integer(forKey: "week_start_day")
+        calendar.firstWeekday = stored > 0 ? stored : 2
         let components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
         return calendar.date(from: components) ?? date
     }

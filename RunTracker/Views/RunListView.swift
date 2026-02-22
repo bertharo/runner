@@ -5,7 +5,9 @@ struct RunListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Run.date, order: .reverse) private var runs: [Run]
     @AppStorage("use_miles") private var useMiles = true
+    @AppStorage("week_start_day") private var weekStartDay = 2
     @State private var showingAddRun = false
+    @State private var showingCoachSheet = false
 
     private var unitLabel: String { useMiles ? "mi" : "km" }
 
@@ -26,6 +28,31 @@ struct RunListView: View {
         return String(format: "%d:%02d", mins, secs)
     }
 
+    // MARK: - Calendar
+
+    private var calendar: Calendar {
+        var cal = Calendar.current
+        cal.firstWeekday = weekStartDay
+        return cal
+    }
+
+    private var weekStartDate: Date? {
+        let comps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
+        return calendar.date(from: comps)
+    }
+
+    private var weekEndDate: Date? {
+        guard let start = weekStartDate else { return nil }
+        return calendar.date(byAdding: .day, value: 6, to: start)
+    }
+
+    private var weekDateRangeLabel: String {
+        guard let start = weekStartDate, let end = weekEndDate else { return "" }
+        let df = DateFormatter()
+        df.dateFormat = "MMM d"
+        return "\(df.string(from: start)) – \(df.string(from: end))"
+    }
+
     // MARK: - Computed Stats
 
     private var totalDistance: Double {
@@ -33,18 +60,12 @@ struct RunListView: View {
     }
 
     private var thisWeekDistance: Double {
-        var cal = Calendar.current
-        cal.firstWeekday = 2
-        let comps = cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
-        guard let start = cal.date(from: comps) else { return 0 }
+        guard let start = weekStartDate else { return 0 }
         return runs.filter { $0.date >= start }.reduce(0) { $0 + dist($1.distance) }
     }
 
     private var thisWeekRuns: Int {
-        var cal = Calendar.current
-        cal.firstWeekday = 2
-        let comps = cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
-        guard let start = cal.date(from: comps) else { return 0 }
+        guard let start = weekStartDate else { return 0 }
         return runs.filter { $0.date >= start }.count
     }
 
@@ -65,6 +86,17 @@ struct RunListView: View {
             ScrollView {
                 LazyVStack(spacing: 16) {
                     if !runs.isEmpty {
+                        if !weekDateRangeLabel.isEmpty {
+                            HStack {
+                                Text("This Week")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                Spacer()
+                                Text(weekDateRangeLabel)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                         kpiGrid
                         runsList
                     } else {
@@ -77,6 +109,15 @@ struct RunListView: View {
             .background(Color(.systemGroupedBackground))
             .navigationTitle("tränare")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        showingCoachSheet = true
+                    } label: {
+                        Image(systemName: "sparkles")
+                            .font(.title3)
+                            .foregroundStyle(.purple)
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddRun = true }) {
                         Image(systemName: "plus")
@@ -85,6 +126,9 @@ struct RunListView: View {
             }
             .sheet(isPresented: $showingAddRun) {
                 AddRunView()
+            }
+            .sheet(isPresented: $showingCoachSheet) {
+                CoachSheet()
             }
         }
     }

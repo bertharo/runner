@@ -9,6 +9,7 @@ struct SettingsView: View {
 
     @AppStorage("use_miles") private var useMiles = true
     @AppStorage("coach_model") private var coachModel = "llama-3.3-70b-versatile"
+    @AppStorage("week_start_day") private var weekStartDay = 2 // 1=Sunday, 2=Monday, 7=Saturday
 
     @StateObject private var stravaAuth = StravaAuth()
     @State private var showSignOutConfirmation = false
@@ -47,6 +48,14 @@ struct SettingsView: View {
                     Picker("Distance", selection: $useMiles) {
                         Text("Miles").tag(true)
                         Text("Kilometers").tag(false)
+                    }
+                }
+
+                Section("Training Week") {
+                    Picker("Week Starts On", selection: $weekStartDay) {
+                        Text("Monday").tag(2)
+                        Text("Sunday").tag(1)
+                        Text("Saturday").tag(7)
                     }
                 }
 

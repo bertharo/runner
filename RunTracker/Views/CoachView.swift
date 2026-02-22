@@ -8,6 +8,7 @@ struct CoachView: View {
     @Query(sort: \CoachingResponse.createdAt, order: .reverse) private var history: [CoachingResponse]
     @Query private var profiles: [UserProfile]
     @AppStorage("use_miles") private var useMiles = true
+    @AppStorage("week_start_day") private var weekStartDay = 2
 
     @State private var showingCoachSheet = false
 
@@ -15,7 +16,7 @@ struct CoachView: View {
 
     private var calendar: Calendar {
         var cal = Calendar.current
-        cal.firstWeekday = 2 // Monday
+        cal.firstWeekday = weekStartDay
         return cal
     }
 
@@ -56,9 +57,25 @@ struct CoachView: View {
 
     // MARK: - This Week Data
 
-    private var thisWeekRuns: [Run] {
+    private var weekStartDate: Date? {
         let comps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
-        guard let start = calendar.date(from: comps) else { return [] }
+        return calendar.date(from: comps)
+    }
+
+    private var weekEndDate: Date? {
+        guard let start = weekStartDate else { return nil }
+        return calendar.date(byAdding: .day, value: 6, to: start)
+    }
+
+    private var weekDateRangeLabel: String {
+        guard let start = weekStartDate, let end = weekEndDate else { return "" }
+        let df = DateFormatter()
+        df.dateFormat = "MMM d"
+        return "\(df.string(from: start)) – \(df.string(from: end))"
+    }
+
+    private var thisWeekRuns: [Run] {
+        guard let start = weekStartDate else { return [] }
         return runs.filter { $0.date >= start }
     }
 
@@ -220,6 +237,18 @@ struct CoachView: View {
     // MARK: - This Week Summary
 
     private var thisWeekSection: some View {
+        VStack(spacing: 8) {
+            if !weekDateRangeLabel.isEmpty {
+                HStack {
+                    Text("This Week")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    Spacer()
+                    Text(weekDateRangeLabel)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
         HStack(spacing: 12) {
             DashboardStat(
                 title: unitLabel.uppercased(),
@@ -236,6 +265,7 @@ struct CoachView: View {
                 value: "\(thisWeekRuns.count)",
                 icon: "calendar"
             )
+        }
         }
     }
 
@@ -445,7 +475,7 @@ private struct DashboardStat: View {
 
 // MARK: - Coach Sheet (existing coaching UI)
 
-private struct CoachSheet: View {
+struct CoachSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \CoachingResponse.createdAt, order: .reverse) private var history: [CoachingResponse]
