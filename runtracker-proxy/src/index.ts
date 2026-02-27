@@ -93,6 +93,10 @@ export default {
       return handleCoachMessages(request, env);
     }
 
+    if (path === "/privacy" && request.method === "GET") {
+      return handlePrivacyPolicy();
+    }
+
     return jsonResponse({ error: "Not found" }, 404);
   },
 };
@@ -130,6 +134,92 @@ async function handleStravaToken(request: Request, env: Env): Promise<Response> 
 
   const data = await stravaResponse.json();
   return jsonResponse(data, stravaResponse.status);
+}
+
+function handlePrivacyPolicy(): Response {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tränare — Privacy Policy</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 720px; margin: 0 auto; padding: 24px 16px; color: #222; line-height: 1.6; }
+  h1 { font-size: 1.5em; }
+  h2 { font-size: 1.15em; margin-top: 1.8em; }
+  a { color: #0066cc; }
+  .updated { color: #666; font-size: 0.9em; }
+</style>
+</head>
+<body>
+<h1>Privacy Policy — tränare</h1>
+<p class="updated">Last updated: February 26, 2026</p>
+
+<p>tränare ("the App") is developed by bertharo. This policy describes how we collect, use, and protect your information.</p>
+
+<h2>Information We Collect</h2>
+
+<p><strong>1. Apple Account Information</strong><br>
+When you sign in with Apple, we receive your Apple user identifier and, optionally, your name and email address. Apple may provide a private relay email address instead of your real email. This information is stored locally on your device in the iOS Keychain.</p>
+
+<p><strong>2. Running Data</strong><br>
+If you connect your Strava account, we import your running activities including distance, pace, duration, heart rate, elevation, and workout type. You may also log runs manually. All running data is stored locally on your device using Apple's SwiftData framework.</p>
+
+<p><strong>3. Goal and Preference Data</strong><br>
+Training goals (race name, target time, weekly mileage) and app preferences (units, AI model selection, week start day) are stored locally on your device.</p>
+
+<h2>How We Use Your Information</h2>
+
+<ul>
+<li>Your Apple user identifier is sent to our proxy server solely to determine your account tier (free or premium). It is stripped from requests before forwarding to any third-party AI provider.</li>
+<li>When you use the AI Coach feature, your training data and questions are sent to our proxy server, which forwards them to AI providers (Anthropic or Groq) to generate coaching responses. We do not store your training data or coaching conversations on our servers.</li>
+<li>Strava OAuth tokens are exchanged through our proxy server to protect API credentials. We do not store your Strava tokens on our servers.</li>
+</ul>
+
+<h2>Third-Party Services</h2>
+
+<p>The App uses the following third-party services:</p>
+<ul>
+<li><strong>Strava API</strong> — to sync your running activities (<a href="https://www.strava.com/legal/privacy">privacy policy</a>)</li>
+<li><strong>Anthropic API</strong> — to provide AI coaching via Claude models (<a href="https://www.anthropic.com/privacy">privacy policy</a>)</li>
+<li><strong>Groq API</strong> — to provide AI coaching via Llama models (<a href="https://groq.com/privacy-policy">privacy policy</a>)</li>
+<li><strong>Cloudflare Workers</strong> — to host our proxy server (<a href="https://www.cloudflare.com/privacypolicy">privacy policy</a>)</li>
+</ul>
+
+<h2>Data Storage and Security</h2>
+
+<p>All personal data (Apple credentials, running history, goals, coaching history) is stored locally on your device. Our proxy server does not persist any user data — it only forwards requests in real time.</p>
+
+<h2>Your Choices</h2>
+
+<ul>
+<li>You can sign out at any time in Settings, which removes your Apple credentials from the device Keychain.</li>
+<li>You can disconnect Strava at any time in Settings.</li>
+<li>You can delete the app to remove all locally stored data.</li>
+</ul>
+
+<h2>Data Retention</h2>
+
+<p>We do not retain any personal data on our servers. All data is stored on your device and is removed when you sign out or delete the app.</p>
+
+<h2>Children's Privacy</h2>
+
+<p>The App is not directed at children under 13. We do not knowingly collect information from children under 13.</p>
+
+<h2>Changes to This Policy</h2>
+
+<p>We may update this policy from time to time. Changes will be reflected in the "Last updated" date above.</p>
+
+<h2>Contact</h2>
+
+<p>If you have questions about this privacy policy, contact us at <a href="mailto:bertharo23@gmail.com">bertharo23@gmail.com</a>.</p>
+</body>
+</html>`;
+
+  return new Response(html, {
+    status: 200,
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  });
 }
 
 async function handleCoachMessages(request: Request, env: Env): Promise<Response> {
