@@ -39,6 +39,13 @@ struct SettingsView: View {
                     }
                     .padding(.vertical, 4)
 
+                    if let userId = authManager.userIdentifier {
+                        Button("Copy User ID") {
+                            UIPasteboard.general.string = userId
+                        }
+                        .font(.caption)
+                    }
+
                     Button("Sign Out", role: .destructive) {
                         showSignOutConfirmation = true
                     }

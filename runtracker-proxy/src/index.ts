@@ -27,8 +27,9 @@ function isGroqModel(model: string): boolean {
   return !model.startsWith("claude-");
 }
 
-function isPremiumUser(userId: string): boolean {
-  return PREMIUM_USER_IDS.has(userId);
+function isPremiumUser(_userId: string): boolean {
+  // Allow all users access to Claude models for now
+  return true;
 }
 
 function translateToGroqRequest(body: Record<string, unknown>): Record<string, unknown> {
